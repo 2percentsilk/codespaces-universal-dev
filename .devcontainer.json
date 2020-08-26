@@ -1,3 +1,4 @@
 {
-    "image": "mcr.microsoft.com/vscode/devcontainers/universal:0.15.0"
+    // "image": "mcr.microsoft.com/vscode/devcontainers/universal:0.15.0"
+    "dockerFile": "Dockerfile"
 }
