@@ -1,0 +1,25 @@
+#!/bin/bash
+ENV_MODE=${1:-"auto"}
+UPDATE_DEFAULT=${2:-"false"}
+
+if [ "${ENV_MODE}" = "detect" ] || [ ! -f /opt/oryx/default-platforms ]; then
+    TARGET_PLATFORMS=$(oryx prep -s . | tee /dev/tty | grep -oE '^\s+.+:\s.+' | sed -e 's/^[ \t]*//' | sed -e 's/: /=/' )
+    if [ "${UPDATE_DEFAULT}" = "true" ] || [ ! -f /opt/oryx/default-platforms ]; then
+        echo "${TARGET_PLATFORMS}" >| /opt/oryx/default-platforms
+        while read -r line
+        do
+            PLATFORM=${line%=*}
+            PLATFORM_VERSION=${line##*=}
+            sudo rm -f /opt/$PLATFORM/current
+            sudo ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
+        done < /opt/oryx/default-platforms
+    fi
+else 
+    TARGET_PLATFORMS=$(cat /opt/oryx/default-platforms)
+fi
+
+. benv $(echo ${TARGET_PLATFORMS} | tr "\n" " ") 2>/dev/null
+
+#oryx exec 'export -p > /tmp/oryxenv' > /dev/null 2>&1
+#source /tmp/oryxenv
+#rm /tmp/oryxenv

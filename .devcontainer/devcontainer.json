@@ -1,6 +1,10 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.153.0/containers/codespaces-linux
 {
 	"name": "GitHub Codespaces (Default)",
-	"image": "mcr.microsoft.com/vscode/devcontainers/universal:dev",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash",
 		"go.useGoProxyToCheckForToolUpdates": false,
@@ -41,5 +45,5 @@
 	// "forwardPorts": [],
 
 	// "oryx build" will automatically install your dependencies and attempt to build your project
-	"postCreateCommand": "oryx build || echo 'Could not auto-build. Skipping.'"
+	"postCreateCommand": "oryx-env detect true || echo 'Could not auto-build. Skipping.'"
 }
