@@ -10,7 +10,7 @@ RUN sudo bash -c "\
         mv /tmp/oryx-env /usr/local/bin/ \
         && chmod +x /usr/local/bin/oryx-env \
         && mv /tmp/original-platform-versions /opt/oryx/ \
-        && echo '. benv $(cat /opt/oryx/default-platform-versions | tr "\n" " ") 2>/dev/null' | tee -a /etc/bash.bashrc >> /etc/zsh/zshrc \
+        && echo '. benv \$(cat /opt/oryx/default-platform-versions | tr \"\n\" \" \") 2>/dev/null' | tee -a /etc/bash.bashrc >> /etc/zsh/zshrc \
         # Work around annoying problem with rvm warnings
         && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/bash.bashrc \
         && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/zsh/zshrc" \
