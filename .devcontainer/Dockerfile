@@ -22,5 +22,3 @@ RUN sudo bash -c "\
         && sdk uninstall java opt-java-lts \
         && sdk uninstall java opt-java-11 \
         && sdk uninstall java 8.0.275.hs-adpt"
-
-echo $(echo "${PATH}" | sed -r 's/\/opt\/[^\/]+\/current\/bin:?//g' | sed -r 's/\/opt\/dotnet\/current:?//g')
