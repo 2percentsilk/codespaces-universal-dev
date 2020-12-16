@@ -6,7 +6,14 @@ ENV PATH="${ORIGINAL_PATH}:${NVM_DIR}/current/bin:${NPM_GLOBAL}/bin:${DOTNET_ROO
 
 COPY ./oryx-env ./original-platform-versions /tmp/
 RUN sudo bash -c "\
-    mv /tmp/oryx-env /usr/local/bin/ \
-    chmod +x /usr/local/bin/oryx-env \
-    mv /tmp/original-pltform-versions /opt/oryx/" \
-    && /usr/local/bin/oryx-env true reset
+        # Wire put oryx-env in the right spot as root
+        mv /tmp/oryx-env /usr/local/bin/ \
+        && chmod +x /usr/local/bin/oryx-env \
+        && mv /tmp/original-platform-versions /opt/oryx/" \
+    && /usr/local/bin/oryx-env true reset \
+    # Resolve https://github.com/microsoft/vscode-dev-containers/issues/691
+    && bash -c "\
+        source ${SDKMAN_DIR}/bin/sdkman-init.sh \
+        && sdk uninstall java opt-java-lts \
+        && sdk uninstall java opt-java-11 \
+        && sdk uninstall java 8.0.275.hs-adpt"

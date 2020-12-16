@@ -45,5 +45,5 @@
 	// "forwardPorts": [],
 
 	// "oryx build" will automatically install your dependencies and attempt to build your project
-	"postCreateCommand": "oryx-env detect true || echo 'Could not detect platforms. Skipping.'"
+	"postCreateCommand": "oryx-env true detect || echo 'Could not detect platforms. Skipping.'"
 }
