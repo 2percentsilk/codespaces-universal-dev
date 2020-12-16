@@ -6,16 +6,15 @@ ENV PATH="${ORIGINAL_PATH}:${NVM_DIR}/current/bin:${NPM_GLOBAL}/bin:${DOTNET_ROO
 
 COPY ./oryx-env ./original-platform-versions /tmp/
 RUN sudo bash -c "\
-        # Wire put oryx-env in the right spot as root
+        # Wire put oryx-env, benv in the right spots as root
         mv /tmp/oryx-env /usr/local/bin/ \
         && chmod +x /usr/local/bin/oryx-env \
         && mv /tmp/original-platform-versions /opt/oryx/ \
+        && echo '. benv $(cat /opt/oryx/default-platform-versions | tr "\n" " ") 2>/dev/null' | tee -a /etc/bash.bashrc >> /etc/zsh/zshrc \
         # Work around annoying problem with rvm warnings
         && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/bash.bashrc \
         && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/zsh/zshrc" \
     && /usr/local/bin/oryx-env true reset \
-    # Trigger benv in bashrc
-    && echo ". benv \$(cat /opt/oryx/default-platform-versions | tr '\n' ' ') 2>/dev/null" | tee -a /etc/bash.bashrc >> /etc/zsh/zshrc \
     # Resolve https://github.com/microsoft/vscode-dev-containers/issues/691
     && bash -c "\
         . ${SDKMAN_DIR}/bin/sdkman-init.sh \
