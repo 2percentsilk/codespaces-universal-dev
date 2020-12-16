@@ -50,6 +50,13 @@ do
     fi
 done <<< "${TARGET_PLATFORMS}"
 
+# Update SDKs symlinks if dotnet is a platform that was updated
+find /opt/dotnet/*.*.*/sdk -maxdepth 1 -type d -name "*.*.*" | while read SDK_PATH; do
+    ALL_SDK_PATH="/home/codespace/.dotnet/sdk/$(basename ${SDK_PATH})"
+    rm -f "${ALL_SDK_PATH}"
+    ln -s "${SDK_PATH}" "${ALL_SDK_PATH}"
+done
+
 # Save manifest of global defaults if enabled
 if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
     echo "${UPDATED_PLATFORMS}" >| /opt/oryx/default-platform-versions
