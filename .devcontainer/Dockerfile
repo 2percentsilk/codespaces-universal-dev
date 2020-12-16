@@ -10,7 +10,8 @@ RUN sudo bash -c "\
         mv /tmp/oryx-env /usr/local/bin/ \
         && chmod +x /usr/local/bin/oryx-env \
         && mv /tmp/original-platform-versions /opt/oryx/ \
-        && echo '. benv \$(cat /opt/oryx/default-platform-versions | tr \"\n\" \" \") 2>/dev/null' | tee -a /etc/bash.bashrc >> /etc/zsh/zshrc \
+        && echo -e 'export PATH=\$(echo \"\${PATH}\" | sed -r 's/\/opt\/[^\/]+\/current\/bin:?//g' | sed -r 's/\/opt\/dotnet\/current:?//g')\n\
+            . benv \$(cat /opt/oryx/default-platform-versions | tr \"\n\" \" \") 2>/dev/null' | tee -a /etc/bash.bashrc >> /etc/zsh/zshrc \
         # Work around annoying problem with rvm warnings
         && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/bash.bashrc \
         && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/zsh/zshrc" \
@@ -21,3 +22,5 @@ RUN sudo bash -c "\
         && sdk uninstall java opt-java-lts \
         && sdk uninstall java opt-java-11 \
         && sdk uninstall java 8.0.275.hs-adpt"
+
+echo $(echo "${PATH}" | sed -r 's/\/opt\/[^\/]+\/current\/bin:?//g' | sed -r 's/\/opt\/dotnet\/current:?//g')
