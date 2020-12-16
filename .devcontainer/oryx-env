@@ -24,7 +24,6 @@ fi
 if [ "${PLATFORM_MODE}" = "detect" ]; then
     echo "Detecting platform versions..."
     TARGET_PLATFORMS="$(oryx prep -s . | tee /dev/tty | grep -oE '^\s+.+:\s.+' | sed -e 's/^[ \t]*//' | sed -e 's/: /=/')"
-    MERGE_PLATFORMS="true"
 elif [ "${PLATFORM_MODE}" = "default" ]; then
     TARGET_PLATFORMS="$(cat /opt/oryx/default-platform-versions)"
 elif [ "${PLATFORM_MODE}" = "reset" ]; then
@@ -34,27 +33,22 @@ else
     shift
     TARGET_PLATFORMS="$(echo $@ | tr ' ' '\n')"
     oryx prep --skip-detection --platforms-and-versions "${TARGET_PLATFORMS//$'\n'/,}"
-    MERGE_PLATFORMS="true"
 fi
 
-# Merge with existing defaults if needed
-if [ "${MERGE_PLATFORMS}" = "true" ]; then
-    UPDATED_PLATFORMS="$(cat /opt/oryx/default-platform-versions)"
-    while read -r PLATFORM_AND_VERSION
-    do
-        PLATFORM=${PLATFORM_AND_VERSION%=*}
-        PLATFORM_VERSION=${PLATFORM_AND_VERSION##*=}
-        if [ "${PLATFORM// /}" != "" ]; then
-            UPDATED_PLATFORMS="$(sed -e "s/${PLATFORM}=.*/${PLATFORM_AND_VERSION}/" <<< "${UPDATED_PLATFORMS}")"
-            if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
-                rm -f /opt/$PLATFORM/current
-                ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
-            fi
+# Merge with existing defaults and update symlinks if needed
+UPDATED_PLATFORMS="$(cat /opt/oryx/default-platform-versions)"
+while read -r PLATFORM_AND_VERSION
+do
+    PLATFORM="${PLATFORM_AND_VERSION%=*}"
+    PLATFORM_VERSION="${PLATFORM_AND_VERSION##*=}"
+    if [ "${PLATFORM// /}" != "" ]; then
+        UPDATED_PLATFORMS="$(sed -e "s/${PLATFORM}=.*/${PLATFORM_AND_VERSION}/" <<< "${UPDATED_PLATFORMS}")"
+        if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
+            rm -f /opt/$PLATFORM/current
+            ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
         fi
-    done <<< "${TARGET_PLATFORMS}"
-else
-    UPDATED_PLATFORMS="${TARGET_PLATFORMS}"
-fi
+    fi
+done <<< "${TARGET_PLATFORMS}"
 
 # Save manifest of global defaults if enabled
 if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
