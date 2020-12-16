@@ -44,10 +44,12 @@ if [ "${MERGE_PLATFORMS}" = "true" ]; then
     do
         PLATFORM=${PLATFORM_AND_VERSION%=*}
         PLATFORM_VERSION=${PLATFORM_AND_VERSION##*=}
-        UPDATED_PLATFORMS="$(sed -e "s/${PLATFORM}=.*/${PLATFORM_AND_VERSION}/" <<< "${UPDATED_PLATFORMS}")"
-        if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
-            rm -f /opt/$PLATFORM/current
-            ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
+        if [ "${PLATFORM// /}" != "" ]; then
+            UPDATED_PLATFORMS="$(sed -e "s/${PLATFORM}=.*/${PLATFORM_AND_VERSION}/" <<< "${UPDATED_PLATFORMS}")"
+            if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
+                rm -f /opt/$PLATFORM/current
+                ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
+            fi
         fi
     done <<< "${TARGET_PLATFORMS}"
 else
