@@ -1,0 +1,9 @@
+nodejs=lts
+dotnet=lts
+python=latest
+php=lts
+hugo=lts
+java=lts
+ruby=lts
+yarn=stable
+maven=lts
