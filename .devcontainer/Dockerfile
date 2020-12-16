@@ -14,9 +14,11 @@ RUN sudo bash -c "\
         && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/bash.bashrc \
         && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/zsh/zshrc" \
     && /usr/local/bin/oryx-env true reset \
+    # Trigger benv in bashrc
+    && echo ". benv \$(cat /opt/oryx/default-platform-versions | tr '\n' ' ') 2>/dev/null" | tee -a /etc/bash.bashrc >> /etc/zsh/zshrc \
     # Resolve https://github.com/microsoft/vscode-dev-containers/issues/691
     && bash -c "\
-        source ${SDKMAN_DIR}/bin/sdkman-init.sh \
+        . ${SDKMAN_DIR}/bin/sdkman-init.sh \
         && sdk uninstall java opt-java-lts \
         && sdk uninstall java opt-java-11 \
         && sdk uninstall java 8.0.275.hs-adpt"
