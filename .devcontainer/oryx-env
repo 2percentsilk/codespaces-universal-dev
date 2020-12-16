@@ -1,25 +1,63 @@
 #!/bin/bash
-ENV_MODE=${1:-"auto"}
-UPDATE_DEFAULT=${2:-"false"}
+# 
+# Command: oryx-env [update global defaults flag] [taget platforms ]
+#
+# - "Update global defaults flag" is either "true" or "false" and updates symlinks that are in 
+#    the path so that any new process gets the changes rather than just the current shell.
+#
+# - "Target platforms" can be set to:
+#   - "detect" which will automatically detect platforms based on the current folder
+#   - "default" which will reset back to whatever the defaults were previously
+#   - "reset" which will reset the environment back to what was in the image to start with
+#   - Or a separated list of platform names and versions in the form "nodejs=8.17.0 java=1.8.0". 
+#     Available platform versions can be found by running "oryx platforms" command.
+#
+set -e
 
-if [ "${ENV_MODE}" = "detect" ] || [ ! -f /opt/oryx/default-platforms ]; then
-    TARGET_PLATFORMS=$(oryx prep -s . | tee /dev/tty | grep -oE '^\s+.+:\s.+' | sed -e 's/^[ \t]*//' | sed -e 's/: /=/' )
-    if [ "${UPDATE_DEFAULT}" = "true" ] || [ ! -f /opt/oryx/default-platforms ]; then
-        echo "${TARGET_PLATFORMS}" >| /opt/oryx/default-platforms
-        while read -r line
-        do
-            PLATFORM=${line%=*}
-            PLATFORM_VERSION=${line##*=}
-            sudo rm -f /opt/$PLATFORM/current
-            sudo ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
-        done < /opt/oryx/default-platforms
-    fi
-else 
-    TARGET_PLATFORMS=$(cat /opt/oryx/default-platforms)
+UPDATE_GLOBAL_DEFAULTS=${1:-"true"}
+PLATFORM_MODE=${2:-"detect"}
+
+if [ ! -f "/opt/oryx/default-platform-versions" ]; then
+    cp -f /opt/oryx/original-platform-versions /opt/oryx/default-platform-versions
 fi
 
-. benv $(echo ${TARGET_PLATFORMS} | tr "\n" " ") 2>/dev/null
+if [ "${PLATFORM_MODE}" = "detect" ]; then
+    echo "Detecting platform versions..."
+    TARGET_PLATFORMS="$(oryx prep -s . | tee /dev/tty | grep -oE '^\s+.+:\s.+' | sed -e 's/^[ \t]*//' | sed -e 's/: /=/')"
+    MERGE_PLATFORMS="true"
+elif [ "${PLATFORM_MODE}" = "default" ]; then
+    TARGET_PLATFORMS="$(cat /opt/oryx/default-platform-versions)"
+elif [ "${PLATFORM_MODE}" = "reset" ]; then
+    TARGET_PLATFORMS="$(cat /opt/oryx/original-platform-versions)"
+else
+    # If all else fails, treat remaining arguments as platform=version strings
+    shift
+    TARGET_PLATFORMS="$(echo $@ | tr ' ' '\n')"
+    oryx prep --skip-detection --platforms-and-versions "${TARGET_PLATFORMS//$'\n'/,}"
+    MERGE_PLATFORMS="true"
+fi
 
-#oryx exec 'export -p > /tmp/oryxenv' > /dev/null 2>&1
-#source /tmp/oryxenv
-#rm /tmp/oryxenv
+# Merge with existing defaults if needed
+if [ "${MERGE_PLATFORMS}" = "true" ]; then
+    UPDATED_PLATFORMS="$(cat /opt/oryx/default-platform-versions)"
+    while read -r PLATFORM_AND_VERSION
+    do
+        PLATFORM=${PLATFORM_AND_VERSION%=*}
+        PLATFORM_VERSION=${PLATFORM_AND_VERSION##*=}
+        UPDATED_PLATFORMS="$(sed -e "s/${PLATFORM}=.*/${PLATFORM_AND_VERSION}/" <<< "${UPDATED_PLATFORMS}")"
+        if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
+            rm -f /opt/$PLATFORM/current
+            ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
+        fi
+    done <<< "${TARGET_PLATFORMS}"
+else
+    UPDATED_PLATFORMS="${TARGET_PLATFORMS}"
+fi
+
+# Save manifest of global defaults if enabled
+if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
+    echo "${UPDATED_PLATFORMS}" >| /opt/oryx/default-platform-versions
+fi
+
+# Source an updated environment path that matches - script needs to be sourced to pick these changes up
+. benv ${UPDATED_PLATFORMS//$'\n'/ } 2>/dev/null
