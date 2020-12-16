@@ -9,7 +9,10 @@ RUN sudo bash -c "\
         # Wire put oryx-env in the right spot as root
         mv /tmp/oryx-env /usr/local/bin/ \
         && chmod +x /usr/local/bin/oryx-env \
-        && mv /tmp/original-platform-versions /opt/oryx/" \
+        && mv /tmp/original-platform-versions /opt/oryx/ \
+        # Work around annoying problem with rvm warnings
+        && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/bash.bashrc \
+        && sed -i -e 's/\/scripts\/rvm/\/scripts\/rvm >\/dev\/null 2>\&1/' /etc/zsh/zshrc" \
     && /usr/local/bin/oryx-env true reset \
     # Resolve https://github.com/microsoft/vscode-dev-containers/issues/691
     && bash -c "\
