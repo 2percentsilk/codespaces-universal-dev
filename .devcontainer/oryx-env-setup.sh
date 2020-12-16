@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPT_DIR="$(cd "dirname $0" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname $0)" && pwd)"
 
 # Add benv init into /etc/bash.bashrc and /etc/zsh/zshrc and emove "current" symlinks from path they're 
 # not needed in this scenario. They're there primarily for non-interactive, non-login shells
