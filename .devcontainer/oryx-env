@@ -45,9 +45,9 @@ do
         if [[ "${UPDATED_PLATFORMS}" == *"${PLATFORM}="* ]]; then
             UPDATED_PLATFORMS="$(sed -e "s/${PLATFORM}=.*/${PLATFORM_AND_VERSION}/" <<< "${UPDATED_PLATFORMS}")"
         else
-            UPDATED_PLATFORMS="${UPDATED_PLATFORMS}$'\n'${PLATFORM_AND_VERSION}"
+            UPDATED_PLATFORMS="${UPDATED_PLATFORMS}"$'\n'"${PLATFORM_AND_VERSION}"
         fi
-        if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
+        if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ] ||  [ "${UPDATE_GLOBAL_DEFAULTS}" = "symlinks-only" ]; then
             rm -f /opt/$PLATFORM/current
             ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
         fi

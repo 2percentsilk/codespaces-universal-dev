@@ -8,7 +8,7 @@ COPY ./oryx-env /usr/local/bin
 COPY ./original-platform-versions /opt/oryx/
 # Setup oryx-env
 RUN sudo bash -c "echo '. benv \$(cat /opt/oryx/default-platform-versions | tr \"\\n\" \" \") 2>/dev/null' | tee -a /etc/bash.bashrc >> /etc/zsh/zshrc" \
-    && /usr/local/bin/oryx-env true reset
+    && /usr/local/bin/oryx-env symlinks-only reset
 
 # Work around annoying problem with rvm warnings, esolve https://github.com/microsoft/vscode-dev-containers/issues/691
 RUN sudo bash -c "\
