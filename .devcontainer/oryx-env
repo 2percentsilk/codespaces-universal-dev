@@ -17,6 +17,8 @@ set -e
 UPDATE_GLOBAL_DEFAULTS=${1:-"true"}
 PLATFORM_MODE=${2:-"detect"}
 
+echo "[Start] $(date)"
+
 # Make sure file exists
 touch /opt/oryx/default-platform-versions
 
@@ -68,3 +70,5 @@ fi
 
 # Source an updated environment path that matches - script needs to be sourced to pick these changes up
 . benv ${UPDATED_PLATFORMS//$'\n'/ } 2>/dev/null
+
+echo "[Finish] $(date)"
