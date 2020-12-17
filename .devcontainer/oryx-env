@@ -17,9 +17,10 @@ set -e
 UPDATE_GLOBAL_DEFAULTS=${1:-"true"}
 PLATFORM_MODE=${2:-"detect"}
 
-if [ ! -f "/opt/oryx/default-platform-versions" ]; then
-    cp -f /opt/oryx/original-platform-versions /opt/oryx/default-platform-versions
-fi
+echo "[Start] $(date)"
+
+# Make sure file exists
+touch /opt/oryx/default-platform-versions
 
 if [ "${PLATFORM_MODE}" = "detect" ]; then
     echo "Detecting platform versions..."
@@ -42,8 +43,13 @@ do
     PLATFORM="${PLATFORM_AND_VERSION%=*}"
     PLATFORM_VERSION="${PLATFORM_AND_VERSION##*=}"
     if [ "${PLATFORM// /}" != "" ]; then
-        UPDATED_PLATFORMS="$(sed -e "s/${PLATFORM}=.*/${PLATFORM_AND_VERSION}/" <<< "${UPDATED_PLATFORMS}")"
-        if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ]; then
+        # Replace if exists in file, otherwise add it
+        if [[ "${UPDATED_PLATFORMS}" == *"${PLATFORM}="* ]]; then
+            UPDATED_PLATFORMS="$(sed -e "s/${PLATFORM}=.*/${PLATFORM_AND_VERSION}/" <<< "${UPDATED_PLATFORMS}")"
+        else
+            UPDATED_PLATFORMS="${UPDATED_PLATFORMS}"$'\n'"${PLATFORM_AND_VERSION}"
+        fi
+        if [ "${UPDATE_GLOBAL_DEFAULTS}" = "true" ] ||  [ "${UPDATE_GLOBAL_DEFAULTS}" = "symlinks-only" ]; then
             rm -f /opt/$PLATFORM/current
             ln -s /opt/$PLATFORM/$PLATFORM_VERSION /opt/$PLATFORM/current
         fi
@@ -64,3 +70,5 @@ fi
 
 # Source an updated environment path that matches - script needs to be sourced to pick these changes up
 . benv ${UPDATED_PLATFORMS//$'\n'/ } 2>/dev/null
+
+echo "[Finish] $(date)"
