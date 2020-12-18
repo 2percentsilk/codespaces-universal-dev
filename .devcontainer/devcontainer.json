@@ -2,9 +2,7 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.153.0/containers/codespaces-linux
 {
 	"name": "Dynamic Platform Install",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
+	"image": "mcr.microsoft.com/vscode/devcontainers/universal:dev",
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash",
 		"go.useGoProxyToCheckForToolUpdates": false,
